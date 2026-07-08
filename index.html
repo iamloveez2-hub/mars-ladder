@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>重塑火星積分天梯</title>
+  <style>
+    :root {
+      --bg-dark: #080b16;
+      --panel: rgba(15, 20, 38, 0.76);
+      --panel-strong: rgba(23, 29, 54, 0.92);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #eef3ff;
+      --muted: #9aa7c7;
+      --mars: #d96532;
+      --mars-2: #ff9b5f;
+      --gold: #ffd66b;
+      --silver: #dbe7ff;
+      --bronze: #db8d54;
+      --blue: #76d5ff;
+      --green: #8cffca;
+      --danger: #ff786f;
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      color: var(--text);
+      background: var(--bg-dark);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(118, 213, 255, 0.24), transparent 24%),
+        radial-gradient(circle at 80% 12%, rgba(255, 155, 95, 0.18), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(217, 101, 50, 0.42), transparent 38%),
+        linear-gradient(145deg, #070914 0%, #0c1020 48%, #150d11 100%);
+      z-index: -4;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 1.2px),
+        radial-gradient(circle, rgba(255,255,255,.45) 0 1px, transparent 1.2px);
+      background-size: 90px 90px, 140px 140px;
+      background-position: 0 0, 40px 30px;
+      opacity: 0.38;
+      animation: starMove 34s linear infinite;
+      z-index: -3;
+    }
+
+    @keyframes starMove {
+      from { transform: translateY(0); }
+      to { transform: translateY(90px); }
+    }
+
+    .mars-planet {
+      position: fixed;
+      right: -150px;
+      bottom: -160px;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 26%, rgba(255, 221, 165, .65), transparent 9%),
+        radial-gradient(circle at 62% 42%, rgba(80, 25, 24, .32), transparent 13%),
+        radial-gradient(circle at 44% 68%, rgba(86, 31, 26, .38), transparent 12%),
+        linear-gradient(135deg, #ff9d5c, #ca4f2d 54%, #73231f);
+      box-shadow: 0 0 80px rgba(255, 112, 55, .38), inset -55px -45px 100px rgba(0,0,0,.38);
+      z-index: -2;
+      opacity: .75;
+    }
+
+    .dust {
+      position: fixed;
+      inset: auto -20% 0 -20%;
+      height: 240px;
+      background: linear-gradient(to top, rgba(153, 69, 39, .34), transparent);
+      filter: blur(10px);
+      z-index: -1;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 44px 0 60px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .title-card, .champion-card, .board-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-card {
+      padding: 34px;
+    }
+
+    .title-card::before, .board-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(118,213,255,.14), transparent 35%, rgba(255,155,95,.12));
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--blue);
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 18px var(--green);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(.9); opacity: .7; }
+      50% { transform: scale(1.35); opacity: 1; }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 6vw, 74px);
+      line-height: .96;
+      letter-spacing: -0.06em;
+    }
+
+    h1 span {
+      display: block;
+      background: linear-gradient(90deg, #fff, #ffcf94 42%, #ff6e3b 82%);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 42px rgba(255, 120, 67, .18);
+    }
+
+    .subtitle {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+      max-width: 720px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 18px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 25px;
+      color: #fff;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .champion-card {
+      padding: 24px;
+      border-color: rgba(255, 214, 107, .46);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 214, 107, .32), transparent 42%),
+        linear-gradient(160deg, rgba(72, 45, 17, .92), rgba(19, 23, 42, .86));
+      min-height: 330px;
+    }
+
+    .champion-card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: conic-gradient(from 180deg, transparent, rgba(255,214,107,.42), transparent, rgba(255,155,95,.28), transparent);
+      opacity: .5;
+      animation: rotateGlow 7s linear infinite;
+    }
+
+    .champion-inner {
+      position: relative;
+      height: 100%;
+      min-height: 282px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 22px;
+      padding: 22px;
+      background: rgba(6, 8, 18, .44);
+      border: 1px solid rgba(255,255,255,.13);
+    }
+
+    @keyframes rotateGlow {
+      to { transform: rotate(360deg); }
+    }
+
+    .crown {
+      font-size: 54px;
+      line-height: 1;
+      filter: drop-shadow(0 0 22px rgba(255, 214, 107, .62));
+      animation: float 2.8s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50% { transform: translateY(-9px) rotate(4deg); }
+    }
+
+    .champion-label {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,214,107,.14);
+      border: 1px solid rgba(255,214,107,.42);
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .champion-name {
+      margin: 16px 0 8px;
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: #fff7d6;
+      text-shadow: 0 0 26px rgba(255,214,107,.36);
+    }
+
+    .champion-score {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      color: var(--gold);
+      font-weight: 950;
+      font-size: 44px;
+    }
+
+    .champion-score small {
+      font-size: 14px;
+      color: rgba(255,255,255,.68);
+      letter-spacing: .12em;
+    }
+
+    .champion-record {
+      display: flex;
+      gap: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .champion-record b {
+      color: #fff;
+    }
+
+    .board-card {
+      padding: 22px;
+    }
+
+    .board-head {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .board-head h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table {
+      position: relative;
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 86px 1fr 100px 100px 130px;
+      align-items: center;
+      gap: 10px;
+      min-height: 72px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      background: rgba(255,255,255,.045);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .row:hover {
+      transform: translateY(-2px);
+      border-color: rgba(118,213,255,.36);
+      background: rgba(118,213,255,.075);
+    }
+
+    .row.header {
+      min-height: auto;
+      padding: 0 16px 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .rank {
+      font-size: 22px;
+      font-weight: 950;
+      color: var(--blue);
+    }
+
+    .name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .avatar {
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(118,213,255,.24), rgba(217,101,50,.22));
+      border: 1px solid rgba(255,255,255,.16);
+      color: #fff;
+      box-shadow: inset 0 0 20px rgba(255,255,255,.05);
+    }
+
+    .name-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .num {
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .win { color: var(--green); }
+    .lose { color: var(--danger); }
+    .score {
+      color: var(--mars-2);
+      font-size: 22px;
+      font-weight: 950;
+      text-shadow: 0 0 18px rgba(255,155,95,.24);
+    }
+
+    .top-2 {
+      border-color: rgba(219, 231, 255, .36);
+      background: linear-gradient(90deg, rgba(219,231,255,.13), rgba(255,255,255,.04));
+    }
+
+    .top-2 .rank, .top-2 .score { color: var(--silver); }
+
+    .top-3 {
+      border-color: rgba(219, 141, 84, .38);
+      background: linear-gradient(90deg, rgba(219,141,84,.13), rgba(255,255,255,.04));
+    }
+
+    .top-3 .rank, .top-3 .score { color: var(--bronze); }
+
+    .top-1-row {
+      border-color: rgba(255,214,107,.54);
+      background: linear-gradient(90deg, rgba(255,214,107,.2), rgba(255,255,255,.04));
+    }
+
+    .top-1-row .rank, .top-1-row .score { color: var(--gold); }
+
+    .footer-note {
+      margin-top: 18px;
+      color: rgba(238,243,255,.58);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .row {
+        grid-template-columns: 64px 1fr 72px 72px 92px;
+        padding: 12px;
+      }
+      .row.header { display: none; }
+      .name { font-size: 17px; }
+      .avatar { width: 36px; height: 36px; flex-basis: 36px; border-radius: 12px; }
+      .score { font-size: 19px; }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { width: min(100% - 20px, 1180px); padding-top: 22px; }
+      .title-card, .champion-card, .board-card { border-radius: 22px; }
+      .title-card { padding: 24px; }
+      .stats { grid-template-columns: 1fr; }
+      .board-head { align-items: flex-start; flex-direction: column; }
+      .row {
+        grid-template-columns: 54px 1fr 82px;
+        grid-template-areas:
+          "rank name score"
+          "rank win lose";
+        gap: 7px 10px;
+      }
+      .rank { grid-area: rank; }
+      .name { grid-area: name; }
+      .win { grid-area: win; }
+      .lose { grid-area: lose; }
+      .score { grid-area: score; text-align: right; }
+      .num::before {
+        color: var(--muted);
+        font-size: 12px;
+        margin-right: 5px;
+      }
+      .win::before { content: "勝"; }
+      .lose::before { content: "敗"; }
+    }
+  
+
+    /* 手機版修正：完整顯示排名、名字、勝場、敗場、積分 */
+    @media (max-width: 700px) {
+      .mars-planet { width: 320px; height: 320px; right: -145px; bottom: -110px; opacity: .5; }
+      .wrap { width: 100%; padding: 12px 10px 28px; }
+      .hero { grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+      .title-card, .champion-card, .board-card { border-radius: 20px; }
+      .title-card { padding: 20px 16px; }
+      h1 { font-size: clamp(34px, 13vw, 52px); line-height: 1.05; }
+      .subtitle { font-size: 14px; line-height: 1.65; }
+      .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+      .stat { padding: 10px 8px; text-align: center; border-radius: 14px; }
+      .stat b { font-size: 20px; }
+      .stat span { font-size: 11px; }
+      .champion-card { min-height: auto; padding: 12px; }
+      .champion-inner { min-height: 190px; padding: 16px; border-radius: 16px; }
+      .crown { font-size: 38px; }
+      .champion-name { font-size: 30px; line-height: 1.12; overflow-wrap: anywhere; }
+      .champion-score { font-size: 34px; }
+      .board-card { padding: 14px 10px; }
+      .board-head { align-items: flex-start; flex-direction: column; gap: 6px; }
+      .board-head h2 { font-size: 20px; }
+      .hint { font-size: 12px; line-height: 1.45; }
+      .row.header { display: none; }
+      .row {
+        width: 100%;
+        min-height: auto;
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        grid-template-areas:
+          "rank name score"
+          "rank record record";
+        gap: 8px 10px;
+        padding: 12px;
+        border-radius: 16px;
+      }
+      .rank {
+        grid-area: rank;
+        align-self: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,.07);
+        font-size: 16px;
+      }
+      .name { grid-area: name; min-width: 0; gap: 8px; font-size: 16px; }
+      .avatar { width: 32px; height: 32px; flex-basis: 32px; border-radius: 11px; font-size: 11px; }
+      .name-text { white-space: normal; line-height: 1.25; overflow-wrap: anywhere; }
+      .score { grid-area: score; justify-self: end; align-self: center; font-size: 22px; line-height: 1; }
+      .score::after { content: " 分"; font-size: 11px; color: var(--muted); font-weight: 800; }
+      .win, .lose { font-size: 13px; }
+      .win { grid-area: record; justify-self: start; }
+      .lose { grid-area: record; justify-self: start; margin-left: 78px; }
+      .num::before { color: var(--muted); font-size: 12px; margin-right: 4px; }
+      .win::before { content: "勝場 "; }
+      .lose::before { content: "敗場 "; }
+    }
+
+    @media (max-width: 390px) {
+      .stats { grid-template-columns: 1fr; }
+      .stat { display: flex; align-items: baseline; justify-content: space-between; text-align: left; }
+      .row { grid-template-columns: 42px minmax(0, 1fr); grid-template-areas: "rank name" "rank score" "rank record"; }
+      .score { justify-self: start; }
+      .lose { margin-left: 72px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="mars-planet"></div>
+  <div class="dust"></div>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="title-card">
+        <div class="eyebrow"><span class="pulse-dot"></span> Terraforming Mars Ladder</div>
+        <h1>重塑火星<br><span>積分天梯</span></h1>
+        <p class="subtitle">殖民火星只是任務，統治排行榜才是目標，每一次決策，都將決定誰能站上火星之巔，企業可以改變火星，冠軍將改變歷史，火星沒有永遠的霸住，只有不斷被挑戰的王者</p>
+        <div class="stats">
+          <div class="stat"><b id="totalPlayers">4</b><span>參賽玩家</span></div>
+          <div class="stat"><b id="totalGames">12</b><span>總對局紀錄</span></div>
+          <div class="stat"><b id="avgScore">300</b><span>平均積分</span></div>
+        </div>
+      </div>
+
+      <aside class="champion-card" id="championCard">
+        <div class="champion-inner">
+          <div>
+            <div class="crown">👑</div>
+            <div class="champion-label">Mars Champion</div>
+            <div class="champion-name">火星阿任－Lynn</div>
+            <div class="champion-record">
+              <span>勝場 <b>3</b></span>
+              <span>敗場 <b>3</b></span>
+            </div>
+          </div>
+          <div class="champion-score">631<small>POINTS</small></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="board-card">
+      <div class="board-head">
+        <h2>Season 01 Ranking Board</h2>
+        <div class="hint">排序規則：積分高者優先，積分相同時勝場高者優先</div>
+      </div>
+      <div class="table" id="leaderboard">
+        <div class="row header">
+          <div>排名</div>
+          <div>名字</div>
+          <div>勝場</div>
+          <div>敗場</div>
+          <div>積分</div>
+        </div>
+        <div class="row top-1-row">
+          <div class="rank">👑</div>
+          <div class="name"><div class="avatar">火星</div><div class="name-text">火星阿任－Lynn</div></div>
+          <div class="num win">3</div>
+          <div class="num lose">3</div>
+          <div class="score">631</div>
+        </div>
+        <div class="row top-2">
+          <div class="rank">🥈</div>
+          <div class="name"><div class="avatar">火星</div><div class="name-text">火星總裁－Errol Yang</div></div>
+          <div class="num win">3</div>
+          <div class="num lose">3</div>
+          <div class="score">568</div>
+        </div>
+        <div class="row top-3">
+          <div class="rank">🥉</div>
+          <div class="name"><div class="avatar">火星</div><div class="name-text">火星影帝－Ray Chen</div></div>
+          <div class="num win">0</div>
+          <div class="num lose">0</div>
+          <div class="score">0</div>
+        </div>
+        <div class="row">
+          <div class="rank">#4</div>
+          <div class="name"><div class="avatar">火星</div><div class="name-text">火星老狐狸－Big B Lin</div></div>
+          <div class="num win">0</div>
+          <div class="num lose">0</div>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="footer-note">重塑火星積分榜，開發者火星阿任</div>
+    </section>
+  </main>
+
+  <script>
+    /*********************************************************
+     * 你只需要改這裡：新增、修改名字、勝場、敗場、積分
+     * 格式：{ name: "名字", win: 勝場, lose: 敗場, score: 積分 
+更新方式：打開這個 HTML，修改最上方 players 陣列，儲存後重新上傳 GitHub Pages。}
+     *********************************************************/
+    const players = [
+      { name: "火星阿任－Lynn", win: 3, lose: 3, score: 631 },
+      { name: "火星總裁－Errol Yang", win: 3, lose: 3, score: 568 },
+      { name: "火星影帝－Ray Chen", win: 0, lose: 0, score: 0 },
+      { name: "火星老狐狸－Big B Lin", win: 0, lose: 0, score: 0 },
+    ];
+
+    const sortedPlayers = [...players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return b.win - a.win;
+    });
+
+    const trophy = ["👑", "🥈", "🥉"];
+
+    function initials(name) {
+      return [...name].slice(0, 2).join("");
+    }
+
+    function renderChampion() {
+      const champion = sortedPlayers[0];
+      const card = document.getElementById("championCard");
+
+      card.innerHTML = `
+        <div class="champion-inner">
+          <div>
+            <div class="crown">👑</div>
+            <div class="champion-label">Mars Champion</div>
+            <div class="champion-name">${champion.name}</div>
+            <div class="champion-record">
+              <span>勝場 <b>${champion.win}</b></span>
+              <span>敗場 <b>${champion.lose}</b></span>
+            </div>
+          </div>
+          <div class="champion-score">
+            ${champion.score}<small>POINTS</small>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStats() {
+      const totalPlayers = sortedPlayers.length;
+      const totalGames = sortedPlayers.reduce((sum, p) => sum + p.win + p.lose, 0);
+      const avgScore = Math.round(sortedPlayers.reduce((sum, p) => sum + p.score, 0) / totalPlayers);
+
+      document.getElementById("totalPlayers").textContent = totalPlayers;
+      document.getElementById("totalGames").textContent = totalGames;
+      document.getElementById("avgScore").textContent = avgScore;
+    }
+
+    function renderLeaderboard() {
+      const board = document.getElementById("leaderboard");
+      board.innerHTML = `
+        <div class="row header">
+          <div>排名</div>
+          <div>名字</div>
+          <div>勝場</div>
+          <div>敗場</div>
+          <div>積分</div>
+        </div>
+      `;
+
+      sortedPlayers.forEach((player, index) => {
+        const rank = index + 1;
+        const topClass = rank === 1 ? "top-1-row" : rank === 2 ? "top-2" : rank === 3 ? "top-3" : "";
+        const rankText = trophy[index] || `#${rank}`;
+
+        board.innerHTML += `
+          <div class="row ${topClass}">
+            <div class="rank">${rankText}</div>
+            <div class="name">
+              <div class="avatar">${initials(player.name)}</div>
+              <div class="name-text">${player.name}</div>
+            </div>
+            <div class="num win">${player.win}</div>
+            <div class="num lose">${player.lose}</div>
+            <div class="score">${player.score}</div>
+          </div>
+        `;
+      });
+    }
+
+    renderChampion();
+    renderStats();
+    renderLeaderboard();
+  </script>
+</body>
+</html>
